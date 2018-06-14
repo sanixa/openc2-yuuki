@@ -5,6 +5,7 @@ try:
     import xml.etree.cElementTree as ET
 except ImportError:
     import xml.etree.ElementTree as ET
+import veri_flow as v
 
 @action(target="openc2:domain")
 def deny(target, actuator, modifier):
@@ -92,11 +93,61 @@ def add(target, actuator, modifier):
     parm URL is ODL IP
     """
     ##addflow
-    command = "curl -X POST -H \"Content-Type: application/xml\" -d @" + target['URI'] + " --user admin:admin http://" + verification + ":8080/restconf/operations/sal-flow:add-flow"
-    print command
+    command = "curl -X POST -H \"Content-Type: application/xml\" -d @" + target['URI'] + " --user admin:admin http://" + target['URL'] + ":8080/restconf/operations/sal-flow:add-flow"
     os.popen(command).read() 
     
     ##end
     ##verification
-    #tree = ET.ElementTree(file=target['URI'])
+    xdict = v._xml2dict(target['URI'])
+    ftable,count = v._flow_data('ovs-ofctl dump-flows s1')
+    fid = v._flow_id(xdict, ftable, count)
+    if fid == -1:
+        return "error"
+    result = v._verification(xdict, ftable, fid)
+    return result
+    ##end
+
+@action(target="openc2:verification")
+def update(target, actuator, modifier):
+    """
+    parm URI is the location where POST Body file is stored
+    parm URL is ODL IP
+    """
+    ##updateflow
+    command = "curl -X POST -H \"Content-Type: application/xml\" -d @" + target['URI'] + " --user admin:admin http://" + target['URL'] + ":8080/restconf/operations/sal-flow:update-flow"
+    os.popen(command).read() 
+    
+    ##end
+    ##verification
+    xdict = v._xml2dict(target['URI'])
+    ftable,count = v._flow_data('ovs-ofctl dump-flows s1')
+    fid = v._flow_id_u(xdict, ftable, count)
+    if fid == -1:
+        return "error"
+    result = v._verification_u(xdict, ftable, fid)
+    return result
+    ##end
+
+@action(target="openc2:verification")
+def remove(target, actuator, modifier):
+    """
+    parm URI is the location where POST Body file is stored
+    parm URL is ODL IP
+    """
+    ##removeflow
+    command = "curl -X POST -H \"Content-Type: application/xml\" -d @" + target['URI'] + " --user admin:admin http://" + target['URL'] + ":8080/restconf/operations/sal-flow:remove-flow"
+    os.popen(command).read() 
+    
+    ##end
+    ##verification
+    xdict = v._xml2dict(target['URI'])
+    ftable,count = v._flow_data('ovs-ofctl dump-flows s1')
+    if ftable == "":
+        return "correct"
+    fid = v._flow_id(xdict, ftable, count)
+    if fid == -1:
+        return "correct"
+    else:
+        return "error"
+    ##end
 
