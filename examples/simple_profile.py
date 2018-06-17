@@ -1,10 +1,5 @@
 from yuuki.dispatch import action
 import os
-#import ET
-try:
-    import xml.etree.cElementTree as ET
-except ImportError:
-    import xml.etree.ElementTree as ET
 import veri_flow as v
 
 @action(target="openc2:domain")
@@ -86,7 +81,7 @@ def remove(target, actuator, modifier):
     os.popen(command).read() 
     return "success"
 
-@action(target="openc2:verification")
+@action(target="openc2:veri_flow")
 def add(target, actuator, modifier):
     """
     parm URI is the location where POST Body file is stored
@@ -107,7 +102,7 @@ def add(target, actuator, modifier):
     return result
     ##end
 
-@action(target="openc2:verification")
+@action(target="openc2:veri_flow")
 def update(target, actuator, modifier):
     """
     parm URI is the location where POST Body file is stored
@@ -128,7 +123,7 @@ def update(target, actuator, modifier):
     return result
     ##end
 
-@action(target="openc2:verification")
+@action(target="openc2:veri_flow")
 def remove(target, actuator, modifier):
     """
     parm URI is the location where POST Body file is stored
@@ -150,4 +145,37 @@ def remove(target, actuator, modifier):
     else:
         return "error"
     ##end
+
+@action(target="openc2:group")
+def add(target, actuator, modifier):
+    """
+    parm URI is the location where POST Body file is stored
+    parm URL is ODL IP
+    """
+    command = "curl -X POST -H \"Content-Type: application/xml\" -d @" + target['URI'] + " --user admin:admin http://" + target['URL'] + ":8080/restconf/operations/sal-flow:add-group"
+    print command
+    os.popen(command).read() 
+    return "success"
+
+@action(target="openc2:group")
+def update(target, actuator, modifier):
+    """
+    parm URI is the location where POST Body file is stored
+    parm URL is ODL IP
+    """
+    command = "curl -X POST -H \"Content-Type: application/xml\" -d @" + target['URI'] + " --user admin:admin http://" + target['URL'] + ":8080/restconf/operations/sal-flow:update-group"
+    print command
+    os.popen(command).read() 
+    return "success"
+
+@action(target="openc2:group")
+def remove(target, actuator, modifier):
+    """
+    parm URI is the location where POST Body file is stored
+    parm URL is ODL IP
+    """
+    command = "curl -X POST -H \"Content-Type: application/xml\" -d @" + target['URI'] + " --user admin:admin http://" + target['URL'] + ":8080/restconf/operations/sal-flow:remove-group"
+    print command
+    os.popen(command).read() 
+    return "success"
 
