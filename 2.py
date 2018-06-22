@@ -9,8 +9,6 @@ except ImportError:
     import xml.etree.ElementTree as ET
 from xml2dic import XmlDictConfig
 
-import veri_flow as v
-
 
 def main():
     tree = ET.ElementTree(file='add_group.xml')
@@ -22,7 +20,7 @@ def main():
             elem.text = elem.text.decode('utf-8')
     root = tree.getroot()
     xmldict = XmlDictConfig(root)
-    #print xmldict
+    print xmldict
 
     group = os.popen('ovs-ofctl dump-groups s1 -O Openflow13').read() #"ovs-ofctl dump-groups s1 -O Openflow13"
     if group.find("group_id") == -1:
@@ -38,7 +36,6 @@ def main():
     count = 0       # group#
     for elem in group:
         temp = elem.split("=")
-        print temp
         if temp[0] == "group_id" and single_group != {}:
             group_table.update({count:single_group})
             count += 1
@@ -46,7 +43,30 @@ def main():
         else:
             single_group.update({temp[0]:temp[1]})
     group_table.update({count:single_group})
-    print group_table,count
+    #print group_table,count
+
+    gid = -1
+    for i in range(count):
+        if group_table[i]['group_id'] == xmldict['group-id']:
+            gid = i
+
+    result = "correct"
+    try:
+        gtype = xmldict['group-type']
+    except KeyError:
+        pass
+    else:
+        gtype = gtype[6:]
+        if gtype != group_table[gid]['type']:
+            result = "error"
+    try:
+        action = xmldict['buckets']['bucket']['action']['pop-vlan-action']
+    except KeyError:
+        pass
+    else:
+        if  "pop_vlan" != group_table[gid]['actions']:
+            result = "error"
+    print result
 if __name__ == "__main__":
 
     main()
