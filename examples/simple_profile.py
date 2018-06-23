@@ -1,6 +1,7 @@
 from yuuki.dispatch import action
 import os
-import veri_flow as v
+import veri_flow as flow
+import veri_group as group
 
 @action(target="openc2:domain")
 def deny(target, actuator, modifier):
@@ -93,12 +94,12 @@ def add(target, actuator, modifier):
     
     ##end
     ##verification
-    xdict = v._xml2dict(target['URI'])
-    ftable,count = v._flow_data('ovs-ofctl dump-flows s1')
-    fid = v._flow_id(xdict, ftable, count)
+    xdict = flow._xml2dict(target['URI'])
+    ftable,count = flow._flow_data('ovs-ofctl dump-flows s1')
+    fid = flow._flow_id(xdict, ftable, count)
     if fid == -1:
         return "error"
-    result = v._verification(xdict, ftable, fid)
+    result = flow._verification(xdict, ftable, fid)
     return result
     ##end
 
@@ -114,12 +115,12 @@ def update(target, actuator, modifier):
     
     ##end
     ##verification
-    xdict = v._xml2dict(target['URI'])
-    ftable,count = v._flow_data('ovs-ofctl dump-flows s1')
-    fid = v._flow_id_u(xdict, ftable, count)
+    xdict = flow._xml2dict(target['URI'])
+    ftable,count = flow._flow_data('ovs-ofctl dump-flows s1')
+    fid = flow._flow_id_u(xdict, ftable, count)
     if fid == -1:
         return "error"
-    result = v._verification_u(xdict, ftable, fid)
+    result = flow._verification_u(xdict, ftable, fid)
     return result
     ##end
 
@@ -135,11 +136,11 @@ def remove(target, actuator, modifier):
     
     ##end
     ##verification
-    xdict = v._xml2dict(target['URI'])
-    ftable,count = v._flow_data('ovs-ofctl dump-flows s1')
+    xdict = flow._xml2dict(target['URI'])
+    ftable,count = flow._flow_data('ovs-ofctl dump-flows s1')
     if ftable == "":
         return "correct"
-    fid = v._flow_id(xdict, ftable, count)
+    fid = flow._flow_id(xdict, ftable, count)
     if fid == -1:
         return "correct"
     else:
@@ -152,8 +153,7 @@ def add(target, actuator, modifier):
     parm URI is the location where POST Body file is stored
     parm URL is ODL IP
     """
-    command = "curl -X POST -H \"Content-Type: application/xml\" -d @" + target['URI'] + " --user admin:admin http://" + target['URL'] + ":8080/restconf/operations/sal-flow:add-group"
-    print command
+    command = "curl -X POST -H \"Content-Type: application/xml\" -d @" + target['URI'] + " --user admin:admin http://" + target['URL'] + ":8080/restconf/operations/sal-group:add-group"
     os.popen(command).read() 
     return "success"
 
@@ -163,8 +163,7 @@ def update(target, actuator, modifier):
     parm URI is the location where POST Body file is stored
     parm URL is ODL IP
     """
-    command = "curl -X POST -H \"Content-Type: application/xml\" -d @" + target['URI'] + " --user admin:admin http://" + target['URL'] + ":8080/restconf/operations/sal-flow:update-group"
-    print command
+    command = "curl -X POST -H \"Content-Type: application/xml\" -d @" + target['URI'] + " --user admin:admin http://" + target['URL'] + ":8080/restconf/operations/sal-group:update-group"
     os.popen(command).read() 
     return "success"
 
@@ -174,8 +173,63 @@ def remove(target, actuator, modifier):
     parm URI is the location where POST Body file is stored
     parm URL is ODL IP
     """
-    command = "curl -X POST -H \"Content-Type: application/xml\" -d @" + target['URI'] + " --user admin:admin http://" + target['URL'] + ":8080/restconf/operations/sal-flow:remove-group"
-    print command
+    command = "curl -X POST -H \"Content-Type: application/xml\" -d @" + target['URI'] + " --user admin:admin http://" + target['URL'] + ":8080/restconf/operations/sal-group:remove-group"
     os.popen(command).read() 
     return "success"
+
+@action(target="openc2:veri_group")
+def add(target, actuator, modifier):
+    """
+    parm URI is the location where POST Body file is stored
+    parm URL is ODL IP
+    """
+    command = "curl -X POST -H \"Content-Type: application/xml\" -d @" + target['URI'] + " --user admin:admin http://" + target['URL'] + ":8080/restconf/operations/sal-group:add-group"
+    os.popen(command).read() 
+    ##verification
+    xdict = group._xml2dict(target['URI'])
+    gtable,count = group._group_data('ovs-ofctl dump-groups s1 -O Openflow13')
+    gid = group._group_id(xdict, gtable, count)
+    if gid == -1:
+        return "error"
+    result = group._verification(xdict, gtable, gid)
+    return result
+    ##end
+
+@action(target="openc2:veri_group")
+def update(target, actuator, modifier):
+    """
+    parm URI is the location where POST Body file is stored
+    parm URL is ODL IP
+    """
+    command = "curl -X POST -H \"Content-Type: application/xml\" -d @" + target['URI'] + " --user admin:admin http://" + target['URL'] + ":8080/restconf/operations/sal-group:update-group"
+    os.popen(command).read() 
+    ##verification
+    xdict = group._xml2dict(target['URI'])
+    gtable,count = group._group_data('ovs-ofctl dump-groups s1 -O Openflow13')
+    gid = group._group_id_u(xdict, gtable, count)
+    if gid == -1:
+        return "error"
+    result = group._verification_u(xdict, gtable, gid)
+    return result
+    ##end
+
+@action(target="openc2:veri_group")
+def remove(target, actuator, modifier):
+    """
+    parm URI is the location where POST Body file is stored
+    parm URL is ODL IP
+    """
+    command = "curl -X POST -H \"Content-Type: application/xml\" -d @" + target['URI'] + " --user admin:admin http://" + target['URL'] + ":8080/restconf/operations/sal-group:remove-group"
+    os.popen(command).read() 
+    ##verification
+    xdict = group._xml2dict(target['URI'])
+    gtable,count = group._group_data('ovs-ofctl dump-groups s1 -O Openflow13')
+    if gtable == "":
+        return "correct"
+    gid = group._group_id(xdict, gtable, count)
+    if gid == -1:
+        return "correct"
+    else:
+        return "error"
+    ##end
 
