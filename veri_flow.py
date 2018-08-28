@@ -29,13 +29,24 @@ def _flow_data(cmd):
         return "",0
     flow = flow[flow.find("cookie"):]
     flow = flow[:len(flow)-1]
+    temp = flow.splitlines()
+    length = 0
+    for i in temp:
+        s = i[i.find("actions"):len(i)]
+        s = s.replace(",","|")
+        flow = flow[:i.find("actions") + length] + s + flow[len(i) + length + 1:]
+        length += len(i)
     flow = flow.replace("\n",",")
     flow = flow.replace(",ip,",",")
+    flow = flow.replace("send_flow_rem","")
     flow = re.split(r", | |,", flow)
+    
     flow_table = {}
     single_flow = {}
     count = 0       # flow#
     for elem in flow:
+        if elem == "":
+            continue
         temp = elem.split("=")
         if temp[0] == "actions":
             single_flow.update({temp[0]:temp[1]})
